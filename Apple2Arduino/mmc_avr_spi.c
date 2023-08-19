@@ -11,8 +11,10 @@
 /
 /-------------------------------------------------------------------------*/
 
-#include <Arduino.h>
+//#include <Arduino.h>
+
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "diskio_sdc.h"
 #include "mmc_avr.h"
 #include "pindefs.h"
