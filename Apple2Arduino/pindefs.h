@@ -24,6 +24,9 @@ freely, subject to the following restrictions:
 #ifndef _PINDEFS_H
 #define _PINDEFS_H
 
+#define DAN_328P  0
+#define DAN_644P  1
+
 #if defined(__AVR_ATmega328P__)
 #define CS     2    // PB2
 #define CS2    1     // PB1
@@ -38,9 +41,9 @@ freely, subject to the following restrictions:
 #define IBFA   1  // PC1
 #define ACKA   2  // PC2
 #define OBFA   3  // PC3
-
+#define DAN_CARD     DAN_328P
 #elif defined(__AVR_ATmega644P__)
-#define CS     2    // PB2
+#define CS     2     // PB2
 #define CS2    1     // PB1
 #define CS3    0     // PB0
 #define D_CS3  8     // PB0 in Arduino Digital pin
@@ -54,6 +57,7 @@ freely, subject to the following restrictions:
 #define IBFA   7  // PC7
 #define ACKA   2  // PC2
 #define OBFA   3  // PC3
+#define DAN_CARD     DAN_644P
 #else
 #error Invalid platform for pindef.h!
 #endif
