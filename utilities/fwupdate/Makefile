@@ -36,8 +36,8 @@ bin-$(1)/FWUPDATE$(1).SYSTEM: bin-$(1)/fwupdate.o bin-$(1)/dan2stk500.o
 # build firmware update module
 bin-$(1)/fwupdate.o: fwupdate.c ../../version.mk | bin-$(1)
 	@echo "Compiling fwupdate.c" $$@
-	cc65 -t apple2 -D__EXEHDR__=0 -DFW_VERSION=\"$$(FW_VERSION)\" -o bin-$(1)/fwupdate.asm fwupdate.c
-	ca65 -t apple2 -D__EXEHDR__=0 -o $$@ bin-$(1)/fwupdate.asm
+	@cc65 -t apple2 -D__EXEHDR__=0 -DFW_VERSION=\"$$(FW_VERSION)\" -o bin-$(1)/fwupdate.asm fwupdate.c
+	@ca65 -t apple2 -D__EXEHDR__=0 -o $$@ bin-$(1)/fwupdate.asm
 
 # build STK500 updater
 # This bizare contraption allows having C like macros in the assembly
@@ -50,7 +50,7 @@ bin-$(1)/fwupdate.o: fwupdate.c ../../version.mk | bin-$(1)
 # Note, the bin-%/dan2stk500.asm file is kept, so you can 'diff'it.
 bin-$(1)/dan2stk500.o: dan2stk500.asm bin-$(1)/fwimage.bin
 	@echo "Assembling dan2stk500.asm"
-	(cd bin-$(1); \
+	@(cd bin-$(1); \
 		cc65 -E -D__EXEHDR__=0 -DM$(1)=1 \
 			../$$< && mv ../$$(basename $$<).i $$< && \
 		sed -i -e '/^#/d' $$< && \
@@ -65,11 +65,11 @@ bin-$(1):
 	mkdir -p bin-$(1)
 endef
 
-$(eval $(call generate,328P,$(ARDUINO)/Apple2Arduino.ino.with_bootloader.hex))
+$(eval $(call generate,328P,$(ARDUINO)/bin-328p/Apple2Arduino.ino.hex))
 # Only try to generate that firmware if the 644p has been compiled
-HAS_644P := ${wildcard $(ARDUINO)/Apple2Arduino.ino.644.with_bootloader.hex}
+HAS_644P := ${wildcard $(ARDUINO)/bin-644p/Apple2Arduino.ino.hex}
 ifneq ($(HAS_644P),)
-$(eval $(call generate,644P,$(ARDUINO)/Apple2Arduino.ino.644.with_bootloader.hex))
+$(eval $(call generate,644P,$(ARDUINO)/bin-644p/Apple2Arduino.ino.hex))
 endif
 
 clean:
