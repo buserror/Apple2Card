@@ -83,9 +83,20 @@ freely, subject to the following restrictions:
 #define STB_HIGH_SINGLE() PORTC |= _BV(STBA)
 
 /* Needed to slow down data send for 82C55 */
-#define ACK_LOW() do { ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); } while (0)
+
+// Ack has to be 200ns -- 16mhz AVR cycle is ~63
+// ACK to data available is 175ns, so 3 cycles of ACK low should be enough
+#define ACK_LOW() do { \
+                     ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); \
+                     ACK_LOW_SINGLE(); ACK_LOW_SINGLE(); \
+                  } while (0)
+// the read operation should be one cycle, so we reach 200ns and we can release ACK immediately
 #define ACK_HIGH() do { ACK_HIGH_SINGLE();  } while (0)
-#define STB_LOW() do { STB_LOW_SINGLE(); STB_LOW_SINGLE(); STB_LOW_SINGLE(); STB_LOW_SINGLE(); STB_LOW_SINGLE(); } while (0)
+// STB to IBS is 150ns, that's 3 AVR cycles, however, we don't /need/ to wait, we could just read IBS
+#define STB_LOW() do { \
+                        STB_LOW_SINGLE(); STB_LOW_SINGLE(); STB_LOW_SINGLE(); \
+                        STB_LOW_SINGLE(); STB_LOW_SINGLE();\
+                  } while (0)
 #define STB_HIGH() do { STB_HIGH_SINGLE(); } while (0)
 
 #define INITIALIZE_CONTROL_PORT() do { \
