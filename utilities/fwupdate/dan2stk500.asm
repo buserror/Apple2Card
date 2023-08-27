@@ -170,7 +170,7 @@ verify:
     jsr  doSTKverifyBlock  ; read and verify data
     clc                    ; increase word address
     lda  adrlo
-    adc  #$40              ; 64words = 128 bytes
+    adc  #PAGE_SIZE        ; 64words = 128 bytes (328P); 128=w (644P)
     sta  adrlo
     bcc  verify
     inc  adrhi
@@ -188,7 +188,7 @@ program:
     jsr  doSTKwriteBlock   ; program data to flash
     clc                    ; increase word address
     lda  adrlo
-    adc  #$40              ; 64words = 128 bytes
+    adc  #PAGE_SIZE        ; 64words = 128 bytes (328P) 128W=256B (644P)
     sta  adrlo
     bcc  program
     inc  adrhi
@@ -341,7 +341,14 @@ writepage2:
     bpl  writepage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-    adc  #$80
+; do it in words, as we could be doing 64 words = 128, OR now
+; 128 words = 256, so we'd overflow if we'd just use a multiply constant
+#if PAGE_SIZE < 128
+    adc  #(PAGE_SIZE * 2)
+#else
+    adc  #PAGE_SIZE
+    adc  #PAGE_SIZE
+#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
@@ -351,14 +358,14 @@ writepage2:
 checkinput:
     jsr  delay
     ldx  danx
-    lda  $BFFA,x     ; wait until there's a byte available
+    lda  $BFFA,x     ; wait until theres a byte available
     and  #$20
     rts
 
 readbyte:
     ldx  danx
 readbyte2:
-    lda  $BFFA,x     ; wait until there's a byte available
+    lda  $BFFA,x     ; wait until theres a byte available
     and  #$20
     beq  readbyte2
     lda  $BFF8,x     ; get the byte
@@ -373,7 +380,14 @@ readpage2:
     bpl  readpage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-    adc  #$80
+; do it in words, as we could be doing 64 words = 128, OR now
+; 128 words = 256, so we'd overflow if we'd just use a multiply constant
+#if PAGE_SIZE < 128
+    adc  #(PAGE_SIZE * 2)
+#else
+    adc  #PAGE_SIZE
+    adc  #PAGE_SIZE
+#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
@@ -390,7 +404,14 @@ verifypage2:
     bpl  verifypage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-    adc  #$80
+; do it in words, as we could be doing 64 words = 128, OR now
+; 128 words = 256, so we'd overflow if we'd just use a multiply constant
+#if PAGE_SIZE < 128
+    adc  #(PAGE_SIZE * 2)
+#else
+    adc  #PAGE_SIZE
+    adc  #PAGE_SIZE
+#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
@@ -453,4 +474,4 @@ MSG_COMPLETE:
         ASCINV "UPDATE COMPLETE! RESTART TO CONTINUE."
         .BYTE 13+128,0
 
-FW_PTR:  .incbin   "bin/fwimage.bin"
+FW_PTR:  .incbin   "fwimage.bin"
