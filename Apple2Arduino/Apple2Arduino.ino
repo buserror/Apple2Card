@@ -648,6 +648,22 @@ void do_command(uint8_t cmd)
     case 32+128:  do_read(RD_BOOT_BLOCK);
       break;
 #endif
+    case 0xFE: {// Identify Yourself!
+      uint8_t version = DAN_CARD;
+#ifdef USE_RAW_DISK
+        version |= 0x80;
+#endif
+#ifdef USE_FAT_DISK
+        version |= 0x40;
+#endif
+#ifdef USE_ETHERNET
+        version |= 0x20;
+#endif
+#ifdef USE_FTP
+        version |= 0x10;
+#endif
+        write_dataport(version);
+    }  break;
     case 0xFF: // intentional illegal command always returning an error, just for synchronisation
     default:      write_dataport(0x27);
       break;
@@ -711,7 +727,6 @@ void setup()
   setup_pins();
   setup_serial();
   read_eeprom();
-
   request.sdslot = SDSLOT1;
   vol_check_sdslot_type();
   request.sdslot = SDSLOT2;
@@ -754,7 +769,6 @@ void loop()
     CHECK_MEM(1); // memory overflow check (when enabled)
   }
 #endif
-
   while (READ_OBFA() == 0)
   {
     uint8_t instr = read_dataport();
