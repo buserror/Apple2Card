@@ -705,7 +705,9 @@ void setup()
   // marker for stack/memory overflow detection (we're not using heap anyway).
   __heap_start = 0xBEEF;
 #endif
-
+#ifdef SLAVE_S
+  PORTB |= 1 << SLAVE_S; // Make sure SPI Slave Select has a pullup!
+#endif
   setup_pins();
   setup_serial();
   read_eeprom();

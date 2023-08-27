@@ -48,6 +48,7 @@ freely, subject to the following restrictions:
 #define MOSI   5    // PB5
 #define MISO   6    // PB6
 #define SCK    7    // PB7
+#define SLAVE_S 4   // PB4 SS PIN *needs* to be configured as it's floating!
 
 #define STBA   6  // PC6
 #define IBFA   7  // PC7
