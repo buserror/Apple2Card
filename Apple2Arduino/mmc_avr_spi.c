@@ -21,7 +21,6 @@
 
 
 /* Peripheral controls (Platform dependent) */
-#define CS_ALL			(_BV(CS)|_BV(CS2)|_BV(CS3))
 #define CS_LOW()		do { PORTB &= (slotno ?  ~_BV(CS2) : ~_BV(CS)); } while (0) /* Set MMC_CS = low */
 #define	CS_HIGH()		do { PORTB |= CS_ALL; } while (0) /* Set MMC_CS = high */
 #define MMC_CD			(1)	/* Test if card detected.   yes:true, no:false, default:true */
