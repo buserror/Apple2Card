@@ -3,6 +3,16 @@
 
 .setcpu		"6502"
 
+#if defined(M328P)
+#define PAGE_SIZE   64
+#define END_PAGE    $3f
+#elif defined(M644P)
+#define PAGE_SIZE   128
+#define END_PAGE    $7e
+#else
+#error NEED a platform to be defined!
+#endif
+
 ; export the interface functions
 .export setFwUpdateHook
 .export clearWarmStartVec
@@ -179,7 +189,7 @@ verify:
     dec  CH
     dec  CH
     lda  adrhi
-    cmp  #$3f              ; do not consider the last 512bytes (256 words) containing the bootloader
+    cmp  #END_PAGE         ; do not consider the last 512bytes (256 words) containing the bootloader
     bne  verify
     rts
 
@@ -197,7 +207,7 @@ program:
     dec  CH
     dec  CH
     lda  adrhi
-    cmp  #$3f              ; do not consider the last 512bytes (256 words) containing the bootloader
+    cmp  #END_PAGE         ; do not consider the last 512bytes (256 words) containing the bootloader
     bne  program
     rts
 

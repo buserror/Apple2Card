@@ -51,7 +51,7 @@ bin-$(1)/fwupdate.o: fwupdate.c ../../version.mk | bin-$(1)
 bin-$(1)/dan2stk500.o: dan2stk500.asm bin-$(1)/fwimage.bin
 	@echo "Assembling dan2stk500.asm"
 	(cd bin-$(1); \
-		cc65 -E -D__EXEHDR__=0 -DM$(1)=1 -DPAGE_SIZE=$(2) \
+		cc65 -E -D__EXEHDR__=0 -DM$(1)=1 \
 			../$$< && mv ../$$(basename $$<).i $$< && \
 		sed -i -e '/^#/d' $$< && \
 		ca65 -t apple2 -D__EXEHDR__=0 -o $$(notdir $$@) $$< )
@@ -59,17 +59,17 @@ bin-$(1)/dan2stk500.o: dan2stk500.asm bin-$(1)/fwimage.bin
 # generate include file with content of Arduino hex file
 bin-$(1)/fwimage.bin: $(3) | bin-$(1)
 	@echo "Converting Arduino firmware hex to binary"
-	@python3 hex2bin.py --size 32768 --fillbyte 255 $(3) bin-$(1)/fwimage.bin
+	@python3 hex2bin.py --size 32768 --fillbyte 255 $(2) bin-$(1)/fwimage.bin
 
 bin-$(1):
 	mkdir -p bin-$(1)
 endef
 
-$(eval $(call generate,328P,64,$(ARDUINO)/Apple2Arduino.ino.with_bootloader.hex))
+$(eval $(call generate,328P,$(ARDUINO)/Apple2Arduino.ino.with_bootloader.hex))
 # Only try to generate that firmware if the 644p has been compiled
 HAS_644P := ${wildcard $(ARDUINO)/Apple2Arduino.ino.644.with_bootloader.hex}
 ifneq ($(HAS_644P),)
-$(eval $(call generate,644P,128,$(ARDUINO)/Apple2Arduino.ino.644.with_bootloader.hex))
+$(eval $(call generate,644P,$(ARDUINO)/Apple2Arduino.ino.644.with_bootloader.hex))
 endif
 
 clean:
