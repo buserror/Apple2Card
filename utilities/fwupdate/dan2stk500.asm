@@ -188,8 +188,8 @@ verify:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    lda  adrhi
-    cmp  #END_PAGE         ; do not consider the last 512bytes (256 words) containing the bootloader
+    ldx  #>FW_END_PTR       ; compare current buffer to end of firmware
+    lda  bufhi              ; firmware is padded to 256, so no need
     bne  verify
     rts
 
@@ -206,8 +206,8 @@ program:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    lda  adrhi
-    cmp  #END_PAGE         ; do not consider the last 512bytes (256 words) containing the bootloader
+    ldx  #>FW_END_PTR       ; compare current buffer to end of firmware
+    lda  bufhi              ; firmware is padded to 256, so no need
     bne  program
     rts
 
@@ -485,3 +485,4 @@ MSG_COMPLETE:
         .BYTE 13+128,0
 
 FW_PTR:  .incbin   "fwimage.bin"
+FW_END_PTR:     ; this is used to detect the end of the firmware
