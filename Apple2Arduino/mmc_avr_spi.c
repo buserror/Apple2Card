@@ -84,7 +84,9 @@ void power_on (void)
 	MMC_SPI_MODE();
 	SPSR = _BV(SPI2X);
 	DDRB |= CS_ALL | _BV(MOSI) | _BV(SCK);
-	PORTB = CS_ALL | _BV(MOSI) | _BV(MISO) | _BV(SCK);
+	DDRB &= ~_BV(MISO);
+	PORTB |= CS_ALL | _BV(MOSI) | _BV(SCK);
+	PULLUP_ON();
 	sei();
 }
 
