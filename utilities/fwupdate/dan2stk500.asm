@@ -348,21 +348,19 @@ writepage2:
     lda  (buflo),y   ; write a byte to the Arduino
     jsr  writebyte
     iny
+#if PAGE_SIZE < 128
     bpl  writepage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-; do it in words, as we could be doing 64 words = 128, OR now
-; 128 words = 256, so we'd overflow if we'd just use a multiply constant
-#if PAGE_SIZE < 128
     adc  #(PAGE_SIZE * 2)
-#else
-    adc  #PAGE_SIZE
-    adc  #PAGE_SIZE
-#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
     sta  bufhi
+#else
+    bne  writepage2
+    inc  bufhi
+#endif
     rts
 
 checkinput:
@@ -387,21 +385,19 @@ readpage2:
     jsr  readbyte
     sta  (buflo),y
     iny
+#if PAGE_SIZE < 128
     bpl  readpage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-; do it in words, as we could be doing 64 words = 128, OR now
-; 128 words = 256, so we'd overflow if we'd just use a multiply constant
-#if PAGE_SIZE < 128
     adc  #(PAGE_SIZE * 2)
-#else
-    adc  #PAGE_SIZE
-    adc  #PAGE_SIZE
-#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
     sta  bufhi
+#else
+    bne  readpage2
+    inc  bufhi
+#endif
     rts
 
 verifypage:
@@ -411,21 +407,19 @@ verifypage2:
     cmp  (buflo),y
     bne  verifyerr
     iny
+#if PAGE_SIZE < 128
     bpl  verifypage2
     clc              ; now increase buffer pointer by 128 bytes
     lda  buflo
-; do it in words, as we could be doing 64 words = 128, OR now
-; 128 words = 256, so we'd overflow if we'd just use a multiply constant
-#if PAGE_SIZE < 128
     adc  #(PAGE_SIZE * 2)
-#else
-    adc  #PAGE_SIZE
-    adc  #PAGE_SIZE
-#endif
     sta  buflo
     lda  bufhi
     adc  #$00        ; add carry
     sta  bufhi
+#else
+    bne  verifypage2
+    inc  bufhi
+#endif
     rts
 verifyerr:
     sta $0800
@@ -484,5 +478,7 @@ MSG_COMPLETE:
         ASCINV "UPDATE COMPLETE! RESTART TO CONTINUE."
         .BYTE 13+128,0
 
+.export FW_PTR
+.export FW_END_PTR
 FW_PTR:  .incbin   "fwimage.bin"
 FW_END_PTR:     ; this is used to detect the end of the firmware
