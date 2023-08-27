@@ -63,7 +63,8 @@ freely, subject to the following restrictions:
 #define SOFTWARE_SERIAL_TX A5
 
 #define CS_ALL			(_BV(CS)|_BV(CS2)|_BV(CS3))
-#define DISABLE_CS() do { PORTB = CS_ALL;DDRB |= CS_ALL;PORTB = CS_ALL; } while (0)
+/* Make sure we never use PORTB = XXX as it nukes settings for the SS pin */
+#define DISABLE_CS() do { PORTB |= CS_ALL; DDRB |= CS_ALL; } while (0)
 #define DISABLE_RXTX_PINS() UCSR0B &= ~(_BV(RXEN0)|_BV(TXEN0)|_BV(RXCIE0)|_BV(UDRIE0))
 #define ENABLE_RXTX_PINS() UCSR0B |= (_BV(RXEN0)|_BV(TXEN0)|_BV(RXCIE0)|_BV(UDRIE0))
 #define WAIT_TX() while ((UCSR0A & _BV(TXC0) == 0)
