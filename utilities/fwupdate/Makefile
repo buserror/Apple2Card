@@ -52,11 +52,15 @@ bin-$(1)/dan2stk500.o: dan2stk500.asm bin-$(1)/fwimage.bin
 	@echo "Assembling dan2stk500.asm"
 	@(cd bin-$(1); \
 		cc65 -E -D__EXEHDR__=0 -DM$(1)=1 \
+			-DAVR_FILE_SIZE=$$(shell wc -c < bin-$(1)/fwimage.bin) \
 			../$$< && mv ../$$(basename $$<).i $$< && \
 		sed -i -e '/^#/d' $$< && \
 		ca65 -t apple2 -D__EXEHDR__=0 -o $$(notdir $$@) $$< )
 
 # generate include file with content of Arduino hex file
+# Note the generated file is padded to 256 for convenience, however it
+# should be fine and ought not to override the bootloader, as the
+# bootloader page is always a multiple of 256
 bin-$(1)/fwimage.bin: $(3) | bin-$(1)
 	@echo "Converting Arduino firmware hex to binary"
 	@python3 hex2bin.py --size 32768 --fillbyte 255 $(2) bin-$(1)/fwimage.bin
