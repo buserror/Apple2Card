@@ -188,9 +188,9 @@ verify:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    ldx  #>FW_END_PTR       ; compare current buffer to end of firmware
-    lda  bufhi              ; firmware is padded to 256, so no need
-    bne  verify
+    lda  #>FW_END_PTR       ; firmware is padded to 256, so no need
+    sbc  bufhi              ; compare current buffer to end of firmware
+    bpl  verify
     rts
 
 program:
@@ -206,9 +206,9 @@ program:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    ldx  #>FW_END_PTR       ; compare current buffer to end of firmware
-    lda  bufhi              ; firmware is padded to 256, so no need
-    bne  program
+    lda  #>FW_END_PTR       ; firmware is padded to 256, so no need
+    sbc  bufhi              ; compare current buffer to end of firmware
+    bpl  program
     rts
 
 error:
@@ -232,9 +232,9 @@ doSTKwriteBlock:
 
 doSTKrwCmd:
     jsr  writebyte   ; send command byte
-    lda  #$00
-    jsr  writebyte   ; send length $0080 (128 byte)
-    lda  #$80
+    lda  #>(PAGE_SIZE * 2)
+    jsr  writebyte   ; send length (128 byte, or 256 bytes)
+    lda  #<(PAGE_SIZE * 2)
     jsr  writebyte
     lda  #'F'        ; send 'F'lash target
     jmp  writebyte
@@ -342,7 +342,7 @@ writebyte2:
     bpl  writebyte2  ; wait until its received (OBFA is high)
     rts
 
-writepage:           ; write a flash page of 128bytes
+writepage:           ; write a flash page of 128, or 256 bytes
     ldy  #$00
 writepage2:
     lda  (buflo),y   ; write a byte to the Arduino
