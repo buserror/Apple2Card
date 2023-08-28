@@ -12,6 +12,8 @@
 #else
 #error NEED a platform to be defined!
 #endif
+; AVR size in words, used for comparison
+#define AVR_SIZE    (AVR_FILE_SIZE / 2)
 
 ; export the interface functions
 .export setFwUpdateHook
@@ -169,6 +171,12 @@ dan2fwupdate:
     jsr  verify
     PRINT(MSG_OK)      ; "OK!"
 
+    ; leave programming mode. Not strictly necessary
+    lda  #STK_LEAVE_PROGMODE
+    jsr  writebyte
+    lda  #STK_CRC_EOP
+    jsr  writebyte
+
     PRINT(MSG_COMPLETE); "UPDATE COMPLETE"
     jsr  clearWarmStartVec
 
@@ -177,6 +185,9 @@ stop:
 
 verify:
     jsr  doSTKloadAddress  ; load address
+    lda  adrhi
+    cmp  #$ff              ; set when doSTKloadAddress reached the end
+    beq  _verify_done
     jsr  doSTKverifyBlock  ; read and verify data
     clc                    ; increase word address
     lda  adrlo
@@ -188,13 +199,15 @@ verify:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    lda  #>FW_END_PTR       ; firmware is padded to 256, so no need
-    sbc  bufhi              ; compare current buffer to end of firmware
-    bpl  verify
+    jmp  verify
+_verify_done:
     rts
 
 program:
     jsr  doSTKloadAddress  ; load address
+    lda  adrhi
+    cmp  #$ff              ; set when doSTKloadAddress reached the end
+    beq  _program_done
     jsr  doSTKwriteBlock   ; program data to flash
     clc                    ; increase word address
     lda  adrlo
@@ -206,9 +219,8 @@ program:
     jsr  PRHEX2
     dec  CH
     dec  CH
-    lda  #>FW_END_PTR       ; firmware is padded to 256, so no need
-    sbc  bufhi              ; compare current buffer to end of firmware
-    bpl  program
+    jmp  program
+_program_done:
     rts
 
 error:
@@ -268,6 +280,18 @@ doSTKInsyncOk:
     rts
 
 doSTKloadAddress:
+    ; first, compare the AVR address we want with the maximum (in words)
+    ; and set adrhi to 0xff, and exit, if we reached the end
+    lda  adrhi
+    cmp  #>AVR_SIZE
+    bne  _no_overflow
+    lda  adrlo
+    cmp  #<AVR_SIZE
+    bne  _no_overflow
+    lda  #$ff
+    sta  adrhi
+    rts
+_no_overflow:
     lda  #STK_LOAD_ADDRESS
     jsr  writebyte
     lda  adrlo
@@ -479,6 +503,4 @@ MSG_COMPLETE:
         .BYTE 13+128,0
 
 .export FW_PTR
-.export FW_END_PTR
 FW_PTR:  .incbin   "fwimage.bin"
-FW_END_PTR:     ; this is used to detect the end of the firmware
