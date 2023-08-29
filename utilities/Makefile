@@ -49,7 +49,13 @@ bin:
 	- mkdir bin
 
 # build ProDOS disk image
-bin/$(DISK_NAME).po: Makefile ../version.mk fwupdate/bin/FWUPDATE.SYSTEM eeprom/bin/EEPROM.PROG.SYS allvols/bin/ALLVOLS.SYSTEM ipconfig/bin/IPCONFIG.SYSTEM
+HAS_644P := ${wildcard fwupdate/bin-644P/FWUPDATE644P.SYSTEM}
+ifneq ($(HAS_644P),)
+bin/$(DISK_NAME).po: fwupdate/bin-644P/FWUPDATE644P.SYSTEM
+endif
+
+bin/$(DISK_NAME).po: fwupdate/bin-328P/FWUPDATE328P.SYSTEM
+bin/$(DISK_NAME).po: Makefile ../version.mk eeprom/bin/EEPROM.PROG.SYS allvols/bin/ALLVOLS.SYSTEM ipconfig/bin/IPCONFIG.SYSTEM
 	@echo "Building volume $@"
 	@cp ipconfig/ProDOS_312.dsk $(DSK_FILE)
 	@$(AC) -g $(DSK_FILE) MANAGER.SYS bin/MANAGER.SYS
@@ -61,10 +67,13 @@ bin/$(DISK_NAME).po: Makefile ../version.mk fwupdate/bin/FWUPDATE.SYSTEM eeprom/
 	@$(AC) -n $(DSK_FILE) $(DISK_NAME)
 	@cat bin/MANAGER.SYS              | $(AC) -p $(DSK_FILE) MANAGER.SYS     sys
 	@cat bin/FORMAT.SYS               | $(AC) -p $(DSK_FILE) FORMAT.SYS      sys
-	@cat fwupdate/bin/FWUPDATE.SYSTEM | $(AC) -p $(DSK_FILE) FWUPDATE.SYSTEM sys
 	@cat eeprom/bin/EEPROM.PROG.SYS   | $(AC) -p $(DSK_FILE) EEPROM.SYS      sys
 	@cat allvols/bin/ALLVOLS.SYSTEM   | $(AC) -p $(DSK_FILE) ALLVOLS.SYS     sys
 	@cat ipconfig/bin/IPCONFIG.SYSTEM | $(AC) -p $(DSK_FILE) IPCONFIG.SYS    sys
+	@cat fwupdate/bin-328P/FWUPDATE328P.SYSTEM | $(AC) -p $(DSK_FILE) FWUPDATE328P.SYS    sys
+ifneq ($(HAS_644P),)
+	@cat fwupdate/bin-644P/FWUPDATE644P.SYSTEM | $(AC) -p $(DSK_FILE) FWUPDATE644P.SYS    sys
+endif
 	@echo "Converting to ProDOS..."
 	@python3 ipconfig/dsk2po.py $(DSK_FILE)
 	@cp $(DSK_FILE) ../dsk/.
