@@ -656,6 +656,22 @@ void do_command(uint8_t cmd)
     case 0xA3:    do_read(RD_A3_BOOT_BLOCK);
       break;
 #endif
+    case 0xFE: {// Identify Yourself!
+      uint8_t version = DAN_CARD;
+#ifdef USE_RAW_DISK
+        version |= 0x80;
+#endif
+#ifdef USE_FAT_DISK
+        version |= 0x40;
+#endif
+#ifdef USE_ETHERNET
+        version |= 0x20;
+#endif
+#ifdef USE_FTP
+        version |= 0x10;
+#endif
+        write_dataport(version);
+    }  break;
     case 0xFF: // intentional illegal command always returning an error, just for synchronisation
     default:      write_dataport(0x27);
       break;
